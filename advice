@@ -1,0 +1,85 @@
+from random import randrange
+
+def get_advice(exercise_list, advice_list, model):
+    for i in range(len(exercise_list)):
+        exercise = exercise_list[i].split(" /")[0]
+        if exercise in advice_list:
+            advice_list[exercise] += model[-len(exercise_list) + i]
+        else:
+            advice_list[exercise] = model[-len(exercise_list) + i]
+    final_advice = max(advice_list, key=advice_list.get)
+    print(advice_list)
+    return final_advice
+
+
+def update_model(model, last_advice, user_input, exercise_list):
+    real_exercise = user_input.split(" /")[0]
+    if last_advice == real_exercise or real_exercise not in advice_list:
+        return model
+    else:
+        weight = 1
+        for i in range(2, len(exercise_list) + 1):
+            exercise_list[-i] = exercise_list[-i].split(" /")[0]
+            if exercise_list[-i] != real_exercise:
+                model[- i + 1] += weight
+                weight = weight / 10
+        return model
+
+
+def reset(advice_list):
+    for advice in advice_list:
+        advice_list[advice] = 0
+    return advice_list
+
+
+def get_quantity(advice, exercise_list):
+    final_quantity = ''
+    for exercise in exercise_list:
+        if advice in exercise:
+            final_quantity = exercise.split(" /")[1] + '!'
+    for i, c in enumerate(final_quantity):
+        if not c.isdigit() and not c == '.':
+            break
+    number = float(final_quantity[:i])
+    unit = final_quantity[i:]
+    unit = unit.replace('!', '')
+    if unit == 'km':
+        number += 1
+    elif unit == 'm':
+        number += 100
+    elif unit == 's' or unit == 'seconds':
+        number += 30
+    elif unit == 'min' or unit == 'minutes':
+        number += 30
+    elif unit == 'h' or unit == 'hours':
+        number += 0.5
+    elif unit == '':
+        if number < 10:
+            number += 1
+        else:
+            number += 10
+    else:
+        number += 1
+    final_quantity = str(int(number)) + unit
+    return final_quantity
+
+
+if __name__ == "__main__":
+    exercise_list = []
+    user_input = input()
+    model = [0.000000001, 0.00000001, 0.0000001, 0.000001, 0.00001, 0.0001, 0.001, 0.01, 1.1, 1.0]
+    advice_list = {'push ups': 0,
+                   "sit-ups": 0}
+    last_advice = 'sit-ups'
+    while user_input != 'bye':
+        exercise_list.append(user_input)
+        print(exercise_list)
+        model = update_model(model, last_advice, user_input, exercise_list[-10:])
+        print(model)
+        advice = get_advice(exercise_list[-10:], advice_list, model)
+        #quantity = get_quantity(advice, exercise_list[-10:])
+        quantity = ''
+        last_advice = advice
+        print("Your suggestion: do " + quantity + ' ' + advice)
+        advice_list = reset(advice_list)
+        user_input = input()
